@@ -1,11 +1,6 @@
 package agenda;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Scanner;
 
 public class Persistencia {
@@ -14,44 +9,32 @@ public class Persistencia {
 
     public void setArquivo(String arqNam) {
         if (arqNam.isEmpty()) {
-            System.err.println("Deve ser informado o nome do arquivo");
+            System.err.println("⚠️ Deve ser informado o nome do arquivo");
+            return;
+        }
+
+        arqNam = validaTxt(arqNam);
+        File arqTes = new File(diretorio + File.separator + arqNam);
+
+        if (!arqTes.exists()) {
+            System.out.println("❌ O arquivo não existe");
         } else {
-            if (arqNam.toLowerCase().endsWith(".txt")) {
-                File arqTes = new File(diretorio + File.separator + arqNam);
-                if (!arqTes.exists()) {
-                    System.out.println("O arquivo não existe");
-                } else {
-                    this.arquivo = arqNam;
-                    System.out.println("O arquivo " + arqNam + " foi selecionado");
-                }
-            } else {
-                arqNam = arqNam + ".txt";
-                File arqTes = new File(diretorio + File.separator + arqNam);
-                if (!arqTes.exists()) {
-                    System.out.println("O arquivo não existe");
-                } else {
-                    System.out.println("O arquivo " + arqNam + " foi selecionado");
-                    this.arquivo = arqNam;
-                }
-            }
+            this.arquivo = arqNam;
+            System.out.println("✅ O arquivo " + arqNam + " foi selecionado");
         }
     }
 
     public String validaTxt(String arqNam) {
-        if (!arqNam.toLowerCase().endsWith(".txt")) {
-            arqNam = arqNam + ".txt";
-        }
-        return arqNam;
+        return arqNam.toLowerCase().endsWith(".txt") ? arqNam : arqNam + ".txt";
     }
 
     public Persistencia(String arqNam) {
         if (arqNam.isEmpty()) {
-            System.err.println("Deve ser informado o nome do arquivo");
+            System.err.println("⚠️ Deve ser informado o nome do arquivo");
             return;
-        } else {
-          this.arquivo = (arqNam = validaTxt(arqNam));
         }
-        this.criarArquivo();
+        this.arquivo = validaTxt(arqNam);
+        criarArquivo();
     }
 
     public Persistencia() {}
@@ -60,55 +43,41 @@ public class Persistencia {
         try {
             File file = new File(arquivo);
             if (file.createNewFile()) {
-                System.out.println("Arquivo " + this.arquivo + " criado com sucesso");
+                System.out.println("📁 Arquivo " + arquivo + " criado com sucesso");
             }
         } catch (IOException ex) {
-            System.out.println("Erro ao criar " + this.arquivo);
+            System.err.println("❌ Erro ao criar " + arquivo);
         }
     }
 
     public void inserir(Contato contato) {
-        try {
-            FileWriter escritor = new FileWriter(arquivo, true);
-
-            FileReader leitor = new FileReader(arquivo);
-            BufferedReader ler = new BufferedReader(leitor);
-
-            String linha = ler.readLine();
+        try (
+                BufferedReader ler = new BufferedReader(new FileReader(arquivo));
+                BufferedWriter buffer = new BufferedWriter(new FileWriter(arquivo, true))
+        ) {
+            String linha;
             boolean existe = false;
 
-            while (linha != null) {
+            while ((linha = ler.readLine()) != null) {
                 String[] valores = linha.split(";");
-                String nomeExistente = valores[0];
-                String telefoneExistente = valores[1];
-                String emailExistente = valores[2];
-
-                if (contato.getNome().equalsIgnoreCase(nomeExistente) ||
-                        contato.getTelefone().equalsIgnoreCase(telefoneExistente) ||
-                        contato.getEmail().equalsIgnoreCase(emailExistente)) {
+                if (contato.getNome().equalsIgnoreCase(valores[0]) ||
+                        contato.getTelefone().equalsIgnoreCase(valores[1]) ||
+                        contato.getEmail().equalsIgnoreCase(valores[2])) {
                     existe = true;
                     break;
                 }
-                linha = ler.readLine();
             }
 
             if (existe) {
-                System.err.println("Contato com o mesmo nome, telefone, ou email ja existe!!");
+                System.err.println("⚠️ Contato com mesmo nome, telefone ou email já existe!");
                 return;
             }
 
-            BufferedWriter buffer = new BufferedWriter(escritor);
-            buffer.write(contato.getNome() + ";" +
-                    contato.getTelefone() + ";" +
-                    contato.getEmail());
-
+            buffer.write(contato.getNome() + ";" + contato.getTelefone() + ";" + contato.getEmail());
             buffer.newLine();
-            buffer.close();
-            ler.close();
-            escritor.close();
-            System.out.println("Contato adicionado com sucesso");
+            System.out.println("✅ Contato adicionado com sucesso");
         } catch (IOException ex) {
-            System.out.println("Erro ao gravar contato");
+            System.err.println("❌ Erro ao gravar contato");
         }
     }
 
@@ -117,34 +86,29 @@ public class Persistencia {
             File dir = new File(diretorio);
             File[] arquivosTxt = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(".txt"));
 
-            for (int i = 0; i < arquivosTxt.length; i++) {
-                System.out.println(arquivosTxt[i].getName());
+            System.out.println("📚 Arquivos disponíveis:");
+            if (arquivosTxt != null) {
+                for (File arquivo : arquivosTxt) {
+                    System.out.println("📄 " + arquivo.getName());
+                }
             }
-
         } catch (Exception e) {
-            System.out.println("Erro ao listar arquivo");
+            System.err.println("❌ Erro ao listar arquivos");
         }
     }
 
     public void listarContatos() {
-        try {
-            FileReader leitor = new FileReader(arquivo);
-            BufferedReader buffer = new BufferedReader(leitor);
-            String linha = buffer.readLine();
-            System.out.println("-------Lista de Contatos-------");
-            System.out.println("ARQUIVO: " + arquivo);
-            while (linha != null) {
-                String valores[] = linha.split(";");
-                Contato contato = new Contato();
-                contato.setNome(valores[0]);
-                contato.setTelefone(valores[1]);
-                contato.setEmail(valores[2]);
-                System.out.println("Nome:" + contato.getNome() + " Telefone:" + contato.getTelefone() + " Email:" + contato.getEmail());
-                linha = buffer.readLine();
+        try (
+                BufferedReader buffer = new BufferedReader(new FileReader(arquivo))
+        ) {
+            System.out.println("📒 Lista de Contatos — Arquivo: " + arquivo);
+            String linha;
+            while ((linha = buffer.readLine()) != null) {
+                String[] valores = linha.split(";");
+                System.out.println("👤 Nome: " + valores[0] + " | ☎️ Telefone: " + valores[1] + " | 📧 Email: " + valores[2]);
             }
-            buffer.close();
         } catch (IOException e) {
-            System.out.println("Erro ao ler contatos");
+            System.err.println("❌ Erro ao ler contatos");
         }
     }
 
@@ -156,86 +120,129 @@ public class Persistencia {
             BufferedReader bufferArqOri = new BufferedReader(readerArqOri);
 
             String linha = bufferArqOri.readLine();
+            boolean achou = false;
 
             Contato contato = new Contato();
 
-            /*while (linha != null) {
-                String[] valores = linha.split(";");
-                linha = bufferArqOri.readLine();
-            }*/
-
             switch (opc) {
                 case 1:
-                    System.out.println("Qual nome deseja buscar? ");
+                    System.out.print("🔍 Digite o nome a ser buscado: ");
                     String nome = sc.nextLine().toLowerCase();
-                    boolean achou = false;
 
                     while (linha != null) {
                         String[] valores = linha.split(";");
                         if (valores[0].toLowerCase().contains(nome)) {
-
                             contato.setNome(valores[0]);
                             contato.setTelefone(valores[1]);
                             contato.setEmail(valores[2]);
                             achou = true;
-                            System.out.println(" Nome:" + contato.getNome() + "\n Telefone:" + contato.getTelefone() + "\n Email:" + contato.getEmail() + "\n");
-                        }
 
+                            System.out.println("👤 Nome: " + contato.getNome());
+                            System.out.println("☎️ Telefone: " + contato.getTelefone());
+                            System.out.println("📧 Email: " + contato.getEmail());
+                            System.out.println("——————————————");
+                        }
                         linha = bufferArqOri.readLine();
                     }
+
                     if (!achou) {
-                        System.err.println("Nome não encontrado");
+                        System.err.println("❌ Nome não encontrado");
                     }
-
-
                     break;
+
                 case 2:
-                    System.out.println("Qual telefone deseja buscar? ");
+                    System.out.print("🔍 Digite o telefone a ser buscado: ");
                     String telefone = sc.nextLine().toLowerCase();
-                    achou = false;
 
                     while (linha != null) {
                         String[] valores = linha.split(";");
                         if (valores[1].toLowerCase().contains(telefone)) {
-
                             contato.setNome(valores[0]);
                             contato.setTelefone(valores[1]);
                             contato.setEmail(valores[2]);
                             achou = true;
-                            System.out.println(" Nome:" + contato.getNome() + "\n Telefone:" + contato.getTelefone() + "\n Email:" + contato.getEmail() + "\n");
+
+                            System.out.println("👤 Nome: " + contato.getNome());
+                            System.out.println("☎️ Telefone: " + contato.getTelefone());
+                            System.out.println("📧 Email: " + contato.getEmail());
+                            System.out.println("——————————————");
                         }
                         linha = bufferArqOri.readLine();
                     }
+
                     if (!achou) {
-                        System.err.println("Telefone não encontrado");
+                        System.err.println("❌ Telefone não encontrado");
                     }
                     break;
+
                 case 3:
-                    System.out.println("Qual email deseja buscar? ");
+                    System.out.print("🔍 Digite o email a ser buscado: ");
                     String email = sc.nextLine().toLowerCase();
-                    achou = false;
+
                     while (linha != null) {
                         String[] valores = linha.split(";");
                         if (valores[2].toLowerCase().contains(email)) {
-
                             contato.setNome(valores[0]);
                             contato.setTelefone(valores[1]);
                             contato.setEmail(valores[2]);
                             achou = true;
-                            System.out.println(" Nome:" + contato.getNome() + "\n Telefone:" + contato.getTelefone() + "\n Email:" + contato.getEmail() + "\n");
+
+                            System.out.println("👤 Nome: " + contato.getNome());
+                            System.out.println("☎️ Telefone: " + contato.getTelefone());
+                            System.out.println("📧 Email: " + contato.getEmail());
+                            System.out.println("——————————————");
                         }
                         linha = bufferArqOri.readLine();
                     }
+
                     if (!achou) {
-                        System.err.println("Email não encontrado");
+                        System.err.println("❌ Email não encontrado");
                     }
                     break;
+
                 default:
-                    System.err.println("ERRO!! Opção invalida!");
+                    System.err.println("⚠️ Opção inválida!");
                     break;
             }
+
+            bufferArqOri.close();
+
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao buscar contato" + e);
+            System.err.println("❌ Erro ao buscar contato: " + e.getMessage());
+        }
+    }
+
+
+    public void excluirContato(String nome) {
+        File arqTemp = new File(arquivo + ".tmp");
+        boolean encontrado = false;
+
+        try (
+                BufferedReader buffer = new BufferedReader(new FileReader(arquivo));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(arqTemp));
+        ) {
+            String linha;
+            while ((linha = buffer.readLine()) != null) {
+                String[] valores = linha.split(";");
+                if (!valores[0].equalsIgnoreCase(nome)) {
+                    writer.write(linha);
+                    writer.newLine();
+                } else {
+                    encontrado = true;
+                }
+            }
+
+            if (encontrado) {
+                File arqOriginal = new File(arquivo);
+                arqOriginal.delete();
+                arqTemp.renameTo(arqOriginal);
+                System.out.println("✅ Contato excluído com sucesso.");
+            } else {
+                arqTemp.delete();
+                System.out.println("❌ Contato não encontrado.");
+            }
+        } catch (IOException e) {
+            System.err.println("❌ Erro ao excluir contato");
         }
     }
 
@@ -262,7 +269,7 @@ public class Persistencia {
                 switch (opc) {
                     case 1:
                         if (nome.equalsIgnoreCase(valores[0])) {
-                            System.out.println("Digite um novo nome: ");
+                            System.out.print("✏️ Novo nome: ");
                             contato.setNome(sc.nextLine());
                             novoTelefone = valores[1];
                             novoEmail = valores[2];
@@ -279,7 +286,7 @@ public class Persistencia {
                         break;
                     case 2:
                         if (nome.equalsIgnoreCase(valores[1])) {
-                            System.out.println("Digite um novo telefone: ");
+                            System.out.print("✏️ Novo telefone: ");
                             contato.setTelefone(sc.nextLine());
                             novoNome = valores[0];
                             novoEmail = valores[2];
@@ -296,7 +303,7 @@ public class Persistencia {
                         break;
                     case 3:
                         if (nome.equalsIgnoreCase(valores[2])) {
-                            System.out.println("Digite um novo email: ");
+                            System.out.print("✏️ Novo email: ");
                             contato.setEmail(sc.nextLine());
                             novoNome = valores[0];
                             novoTelefone = valores[1];
@@ -313,13 +320,13 @@ public class Persistencia {
                         break;
                     case 4:
                         if (nome.equalsIgnoreCase(valores[0])) {
-                            System.out.println("Digite um novo nome: ");
+                            System.out.print("✏️ Novo nome: ");
                             contato.setNome(sc.nextLine());
 
-                            System.out.println("Digite um novo telefone: ");
+                            System.out.print("✏️ Novo telefone: ");
                             contato.setTelefone(sc.nextLine());
 
-                            System.out.println("Digite um novo email: ");
+                            System.out.print("✏️ Novo email: ");
                             contato.setEmail(sc.nextLine());
 
                             writerArqTem.write(contato.getNome() + ";" +
@@ -334,7 +341,7 @@ public class Persistencia {
                         }
                         break;
                     default:
-                        System.err.println("Opcao Invalida!!");
+                        System.err.println("⚠️ Opção inválida!");
                         break;
                 }
                 linReg = bufferArqOri.readLine();
@@ -346,97 +353,70 @@ public class Persistencia {
             File arqOrig = new File(arquivo);
             if (arqOrig.delete()) {
                 if (arqTem.renameTo(arqOrig)) {
-                    System.out.println("Arquivo renomeado com sucesso");
+                    System.out.println("✅ Arquivo renomeado com sucesso.");
                 }
             } else {
-                System.out.println("Erro ao excluir arquivo original");
+                System.out.println("❌ Erro ao excluir arquivo original");
             }
-            System.out.println("Arquivo editado com sucesso");
+            System.out.println(" ✅ Contato editado com sucesso.");
         } catch (IOException e) {
-            System.out.println("Erro ao ler contatos");
+            System.err.println("❌ Erro ao ler contatos: " + e);
         }
     }
 
-    public boolean existeArquivo(String arquivo) {
+    public boolean existeArquivo(String nomeArquivo) {
         File dir = new File(diretorio);
         File[] arquivosTxt = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(".txt"));
 
-        boolean existe = false;
-        for (int i = 0; i < arquivosTxt.length; i++) {
-            if (arquivosTxt[i].getName().equals(arquivo)) {
-                existe = true;
-            }
-        }
-
-        if (!existe) {
-            System.out.println("Arquivo não encontrado ou inexistente");
-            return false;
-        }else {
-            return true;
-        }
-    }
-
-    public void excluirArquivo(String arquivo) {
-        try {
-            Scanner sc = new Scanner(System.in);
-
-            File dir = new File(diretorio);
-            File[] arquivosTxt = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(".txt"));
-
-            boolean existe = false;
-            for (int i = 0; i < arquivosTxt.length; i++) {
-                if (arquivosTxt[i].getName().equals(arquivo)) {
-                    existe = true;
+        if (arquivosTxt != null) {
+            for (File arq : arquivosTxt) {
+                if (arq.getName().equals(nomeArquivo)) {
+                    return true;
                 }
             }
+        }
 
-            if (!existe) {
-                System.out.println("Arquivo não encontrado ou inexistente");
-                return;
+        System.out.println("❌ Arquivo não encontrado ou inexistente");
+        return false;
+    }
+
+    public void excluirArquivo(String nomeArquivo) {
+        nomeArquivo = validaTxt(nomeArquivo);
+        if (!existeArquivo(nomeArquivo)) return;
+
+        File arqOrig = new File(nomeArquivo);
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("❓ Tem certeza que deseja excluir?\n1 - Sim\n2 - Não");
+        int opc = sc.nextInt();
+
+        if (opc == 1) {
+            if (arqOrig.delete()) {
+                System.out.println("✅ Arquivo deletado com sucesso");
             } else {
-                File arqOrig = new File(arquivo);
-                int opc = 0;
-                System.out.println("Tem certeza que deseja excluir?\n 1 - Sim\n 2 - Nao");
-                opc = sc.nextInt();
-
-                if (opc == 1) {
-                    if (arqOrig.delete()) {
-                        System.out.println("Arquivo deletado com sucesso");
-                    } else {
-                        System.out.println("Não foi possivel deletar o arquivo");
-                    }
-                } else {
-                    System.out.println("Exclusão de arquivo cancelada");
-                }
+                System.err.println("❌ Não foi possível deletar o arquivo");
             }
-
-        } catch (Exception e) {
-            System.out.println("Erro ao excluir arquivo: " + e.getMessage());
+        } else {
+            System.out.println("🚫 Exclusão cancelada");
         }
     }
 
-    public void realizarBackup(String arquivo) {
-        try {
-            arquivo = validaTxt(arquivo);
-            if(existeArquivo(arquivo)){
+    public void realizarBackup(String nomeArquivo) {
+        nomeArquivo = validaTxt(nomeArquivo);
+        if (!existeArquivo(nomeArquivo)) return;
 
-                FileReader ReaderArqOri = new FileReader(arquivo);
-                BufferedReader bufferArqOri = new BufferedReader(ReaderArqOri);
-
-                File arqTem = new File(arquivo + ".bkp");
-                BufferedWriter writerArqTem = new BufferedWriter(new FileWriter(arqTem));
-
-
-                String linReg = bufferArqOri.readLine();
-
-                while (linReg != null) {
-                    writerArqTem.write(linReg);
-                    linReg = bufferArqOri.readLine();
-                }
-                System.out.println("backup realizado com sucesso");
+        try (
+                BufferedReader reader = new BufferedReader(new FileReader(nomeArquivo));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(nomeArquivo + ".bkp"))
+        ) {
+            String linha;
+            while ((linha = reader.readLine()) != null) {
+                writer.write(linha);
+                writer.newLine();
             }
-        }catch (Exception e) {
-            System.out.println("Erro ao realizar backup: " + e.getMessage());
+            System.out.println("✅ Backup realizado com sucesso.");
+        } catch (IOException e) {
+            System.err.println("❌ Erro ao realizar backup");
         }
     }
 }

@@ -19,21 +19,21 @@ public class Main {
 
         try {
             do {
-                System.out.println("\n========================================");
-                System.out.println("         📇 AGENDA DE CONTATOS 📇        ");
-                System.out.println("========================================");
-                System.out.println("  [1] 📁 Criar Arquivo");
-                System.out.println("  [2] 📂 Selecionar Arquivo");
-                System.out.println("  [3] ➕ Adicionar Contato");
-                System.out.println("  [4] 📋 Listar Contatos");
-                System.out.println("  [5] ✏️ Editar Registro");
-                System.out.println("  [6] 🗃️ Listar Arquivos");
-                System.out.println("  [7] 🔍 Buscar Contato");
-                System.out.println("  [8] ❌ Excluir Arquivo");
-                System.out.println("  [9] 💾 Realizar Backup");
+                System.out.println("\n╠══════════════════════════════════════════════╣");
+                System.out.println("           📇 AGENDA DE CONTATOS 📇        ");
+                System.out.println("╠══════════════════════════════════════════════╣");
+                System.out.println("  [1]  📁 Criar Arquivo");
+                System.out.println("  [2]  📂 Selecionar Arquivo");
+                System.out.println("  [3]  ➕ Adicionar Contato");
+                System.out.println("  [4]  📋 Listar Contatos");
+                System.out.println("  [5]  ✏️ Editar Registro");
+                System.out.println("  [6]  🗃️ Listar Arquivos");
+                System.out.println("  [7]  🔍 Buscar Contato");
+                System.out.println("  [8]  ❌ Excluir Arquivo");
+                System.out.println("  [9]  💾 Realizar Backup");
                 System.out.println("  [10] ❌ Excluir Contato");
-                System.out.println("  [0] 🚪 Sair");
-                System.out.println("========================================");
+                System.out.println("  [0]  🚪 Sair");
+                System.out.println("╠══════════════════════════════════════════════╣");
                 System.out.print(">> 🟢 Escolha uma opção: ");
                 opcao = sc.nextInt();
                 sc.nextLine();

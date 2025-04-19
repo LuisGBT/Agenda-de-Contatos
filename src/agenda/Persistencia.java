@@ -25,7 +25,11 @@ public class Persistencia {
     }
 
     public String validaTxt(String arqNam) {
-        return arqNam.toLowerCase().endsWith(".txt") ? arqNam : arqNam + ".txt";
+        if(arqNam.toLowerCase().endsWith(".txt") || arqNam.toLowerCase().endsWith(".bkp")) {
+            return arqNam;
+        }else {
+            return arqNam + arqNam + ".txt";
+        }
     }
 
     public Persistencia(String arqNam) {
@@ -126,7 +130,7 @@ public class Persistencia {
 
             switch (opc) {
                 case 1:
-                    System.out.print("🔍 Digite o nome a ser buscado: ");
+                    System.out.print("🔍 Digite o nome a ser buscado: \n");
                     String nome = sc.nextLine().toLowerCase();
 
                     while (linha != null) {
@@ -380,43 +384,67 @@ public class Persistencia {
         return false;
     }
 
-    public void excluirArquivo(String nomeArquivo) {
-        nomeArquivo = validaTxt(nomeArquivo);
-        if (!existeArquivo(nomeArquivo)) return;
+    public void excluirArquivo(String arquivo) {
+        try {
+            Scanner sc = new Scanner(System.in);
 
-        File arqOrig = new File(nomeArquivo);
-        Scanner sc = new Scanner(System.in);
+            File dir = new File(diretorio);
+            File[] arquivosTxt = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(".txt") || name.endsWith(".bkp"));
 
-        System.out.println("❓ Tem certeza que deseja excluir?\n1 - Sim\n2 - Não");
-        int opc = sc.nextInt();
-
-        if (opc == 1) {
-            if (arqOrig.delete()) {
-                System.out.println("✅ Arquivo deletado com sucesso");
-            } else {
-                System.err.println("❌ Não foi possível deletar o arquivo");
+            boolean existe = false;
+            for (int i = 0; i < arquivosTxt.length; i++) {
+                if (arquivosTxt[i].getName().equals(arquivo)) {
+                    existe = true;
+                }
             }
-        } else {
-            System.out.println("🚫 Exclusão cancelada");
+
+            if (!existe) {
+                System.out.println("❌ Arquivo não encontrado ou inexistente");
+                return;
+            } else {
+                File arqOrig = new File(arquivo);
+                int opc = 0;
+                System.out.println("❓ Tem certeza que deseja excluir?\n1 - Sim\n2 - Não");
+                opc = sc.nextInt();
+
+                if (opc == 1) {
+                    if (arqOrig.delete()) {
+                        System.out.println("✅ Arquivo deletado com sucesso");
+                    } else {
+                        System.out.println("❌ Não foi possível deletar o arquivo");
+                    }
+                } else {
+                    System.out.println("🚫 Exclusão cancelada");
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Erro ao excluir arquivo: " + e.getMessage());
         }
     }
 
-    public void realizarBackup(String nomeArquivo) {
-        nomeArquivo = validaTxt(nomeArquivo);
-        if (!existeArquivo(nomeArquivo)) return;
+    public void realizarBackup(String arquivo) {
+        try {
+            arquivo = validaTxt(arquivo);
+            if(existeArquivo(arquivo)){
 
-        try (
-                BufferedReader reader = new BufferedReader(new FileReader(nomeArquivo));
-                BufferedWriter writer = new BufferedWriter(new FileWriter(nomeArquivo + ".bkp"))
-        ) {
-            String linha;
-            while ((linha = reader.readLine()) != null) {
-                writer.write(linha);
-                writer.newLine();
+                FileReader ReaderArqOri = new FileReader(arquivo);
+                BufferedReader bufferArqOri = new BufferedReader(ReaderArqOri);
+
+                File arqTem = new File(arquivo + ".bkp");
+                BufferedWriter writerArqTem = new BufferedWriter(new FileWriter(arqTem));
+
+
+                String linReg = bufferArqOri.readLine();
+
+                while (linReg != null) {
+                    writerArqTem.write(linReg);
+                    linReg = bufferArqOri.readLine();
+                }
+                System.out.println("✅ Backup realizado com sucesso.");
             }
-            System.out.println("✅ Backup realizado com sucesso.");
-        } catch (IOException e) {
-            System.err.println("❌ Erro ao realizar backup");
+        }catch (Exception e) {
+            System.out.println("❌ Erro ao realizar backup" + e.getMessage());
         }
     }
 }

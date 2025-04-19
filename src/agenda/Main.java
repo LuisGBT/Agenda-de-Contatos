@@ -3,7 +3,7 @@ package agenda;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-public class Teste {
+public class Main {
     public static void main(String[] args) {
         int opcao;
         String arqNam;

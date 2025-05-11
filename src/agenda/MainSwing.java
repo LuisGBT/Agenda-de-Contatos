@@ -6,8 +6,8 @@ public class MainSwing {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            TelaPrincipal tp = new TelaPrincipal();
-            tp.chamarTelaPrincipal();
+            CardManager manager = new CardManager();
+            manager.chamarCardMain();
         });
     }
 }

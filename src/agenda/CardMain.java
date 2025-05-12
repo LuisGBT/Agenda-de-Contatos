@@ -49,7 +49,6 @@ public class CardMain extends JLabel {
         for(String name: opcoes){
             Botao btn = new Botao(name,180,50);
             JButton botao = btn.criarBotao();
-            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             panelMid.add(botao);
             botao.addActionListener(e -> {
                 String opcao = e.getActionCommand();

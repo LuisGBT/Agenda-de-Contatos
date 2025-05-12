@@ -34,11 +34,23 @@ public class CardManager extends JFrame {
     }
 
     public static void chamarOutrosCards(String name) {
-        cardManager.add(new CardCriarArquivo(), "cardCriarArquivo");
+        //cardManager.add(new CardCriarArquivo(), "cardCriarArquivo");
 
         switch (name){
             case "📁 Criar Arquivo":
-                cardLayout.show(cardManager, "cardCriarArquivo");
+                //cardLayout.show(cardManager, "cardCriarArquivo");
+                ImageIcon icon = new ImageIcon("//src/temp/java.png");
+                Object[] opcs = {"Confirmar", "Cancelar"};
+                int fileName = JOptionPane.showOptionDialog(
+                  null,
+                        "Digite o nome do arquivo",
+                        "",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        icon,
+                        opcs,
+                        opcs[0]
+                );
                 break;
         }
     }

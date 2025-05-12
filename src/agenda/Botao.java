@@ -19,6 +19,7 @@ public class Botao {
         JButton botao = new JButton(this.name);
         dimension = new Dimension(this.width, this.height);
         botao.setPreferredSize(this.dimension);
+        botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return botao;
     }
 

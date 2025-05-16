@@ -41,9 +41,13 @@ public class CardManager extends JFrame {
                 //cardLayout.show(cardManager, "cardCriarArquivo");
                 ImageIcon icon = new ImageIcon("//src/temp/java.png");
                 Object[] opcs = {"Confirmar", "Cancelar"};
+                JTextField texto = new JTextField();
+                Object[] mensagem = {
+                        "Digite seu nome", texto
+                };
                 int fileName = JOptionPane.showOptionDialog(
                   null,
-                        "Digite o nome do arquivo",
+                        mensagem,
                         "",
                         JOptionPane.DEFAULT_OPTION,
                         JOptionPane.QUESTION_MESSAGE,
